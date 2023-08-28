@@ -6,7 +6,7 @@
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 09:41:21 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/24 14:58:51 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/08/28 14:42:25 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,17 +23,17 @@
 
 typedef enum type
 {
-    NONE, //defaut set
-    ARG, //word
-    FILE_IN, //word == '<'
-    HERE_DOC, // word == '<<'
-    FILE_OUT, //word == '>'
-    FILE_OUT_SUR, //word == '>>'
-    OPEN_FILE, // word following '<'
-    LIMITOR, // word following '<<'
-    EXIT_FILE, // word followinf '>'
-    EXIT_FILE_RET // word following '>>'
-}			t_type;
+	NONE,         //defaut set
+	ARG,          //word
+	FILE_IN,      //word == '<'
+	HERE_DOC,     // word == '<<'
+	FILE_OUT,     //word == '>'
+	FILE_OUT_SUR, //word == '>>'
+	OPEN_FILE,    // word following '<'
+	LIMITOR,      // word following '<<'
+	EXIT_FILE,    // word followinf '>'
+	EXIT_FILE_RET // word following '>>'
+}					t_type;
 
 typedef struct s_quotes
 {
@@ -43,10 +43,10 @@ typedef struct s_quotes
 
 typedef struct token
 {
-    char            *word;
-    t_type           type;
-    struct token    *next;
-	struct token    *previous;
+	char			*word;
+	t_type			type;
+	struct token	*next;
+	struct token	*previous;
 }					token;
 
 typedef struct cmd_line
@@ -70,12 +70,36 @@ cmd_line			*ft_lstlast_cmd_line(cmd_line *lst);
 int					nb_mots_cmd(char *str);
 int					nb_lettre_cmd(char *s);
 void				split2_pipe(char **input, cmd_line **cmd);
-void				split_pipe(char *input, cmd_line **list);
-// split_wprd.c
-void 				ft_strcpy_pos(char *dst, char *src, int start, int end);
+int					split_pipe(char *input, cmd_line **list);
+// error_handling.c
+int					error_begin_end_cmd(char *input);
+int					error_double_pipe(char *input);
+int					error_syntax(cmd_line *list);
+
+// expand.c
+char	*ft_strcpy(char *dst, char *src, int dstsize);
+char	*ft_trim(char *s, int len);
+int	count_char(char *s, char **env);
+char				*ft_expand(char *word, char **env);
+// expand_count.c
+char *existing_var(char *var, char **env);
+int len_var_env(char *s);
+int find_variable(char *s, char **env);
+int count_between_simple(char **s);
+int count_between_double(char **s, char **env);
+// expand_apply.c
+int between_simple(char *res, char **word, int i);
+int between_double(char *res, char **word, char **env, int i);
+int out_of_quotes(char *res, char **word, char **env, int i);
+
+// split_word.c
+void				ft_strcpy_pos(char *dst, char *src, int start, int end);
+t_type				get_type_meta(char *word);
+void				get_type(token *lst);
 token				*ft_lstnew_token(cmd_line *list, int start, int end);
-int					ft_lstadd_back_token(token **lst, token *new);
-void				add_word(cmd_line *list);
+void				ft_lstadd_back_token(token **lst, token *new);
+int					add_word(cmd_line *list);
+int					get_end_word(char *cmd, int i);
 void				split_word(cmd_line *list);
 
 // -------------------- exec -------------------- //

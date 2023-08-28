@@ -3,17 +3,17 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+         #
+#    By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/18 09:34:07 by aducobu           #+#    #+#              #
-#    Updated: 2023/08/24 13:45:40 by rmeriau          ###   ########.fr        #
+#    Updated: 2023/08/25 10:50:54 by aducobu          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = 			minishell
 
 SRCS = 			${addprefix sources/, \
-					${addprefix parsing/, parsing.c quotes.c split_meta.c list.c split_pipe.c split_word.c} \
+					${addprefix parsing/, parsing.c quotes.c split_meta.c list.c split_pipe.c error_handling.c expand.c expand_count.c expand_apply.c split_word.c} \
 					${addprefix builtins/, pwd.c env.c cd.c echo.c} \
 					${addprefix exec/, main.c env_variables.c frees.c} \
 				}
@@ -21,7 +21,7 @@ SRCS = 			${addprefix sources/, \
 OBJS = 			${SRCS:sources/%.c=objects/%.o}
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g3
+CFLAGS = -Wall -Wextra -Werror
 EXECFLAGS = -lreadline
 RM = rm -rf
 

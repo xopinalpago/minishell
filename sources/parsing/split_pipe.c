@@ -6,7 +6,7 @@
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/23 16:23:10 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/24 13:41:01 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/08/28 14:48:40 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,9 @@
 int	nb_mots_cmd(char *str)
 {
 	int		mots;
-	int		sep;
 	char	q;
 
-	mots = 0;
-	sep = 1;
+	mots = 1;
 	while (*str)
 	{
 		if (*str == 34 || *str == 39)
@@ -31,12 +29,7 @@ int	nb_mots_cmd(char *str)
 			str++;
 		}
 		if (*str == '|')
-			sep = 1;
-		else if (sep == 1)
-		{
 			mots++;
-			sep = 0;
-		}
 		str++;
 	}
 	return (mots);
@@ -87,31 +80,32 @@ void	split2_pipe(char **input, cmd_line **cmd)
 				return ;
 			begin->cmd[j++] = *(*input)++;
 		}
-		begin->cmd[j++] = *(*input)++;
+		if (*(*input) != '|')
+			begin->cmd[j++] = *(*input)++;
 	}
 	begin->cmd[j] = '\0';
 }
 
-void	split_pipe(char *input, cmd_line **list)
+int	split_pipe(char *input, cmd_line **list)
 {
-	// int			j;
 	int			n;
+	cmd_line	*new;
 
 	if (input == NULL)
-		return ;
+		return (0);
 	n = nb_mots_cmd(input);
-	// printf("%d\n", n);
 	while (n)
 	{
 		if (*input == '|')
 			input++;
-		ft_lstadd_back_cmd_line(list, ft_lstnew_cmd_line(nb_lettre_cmd(input)
-					+ 1));
-		// j = 0;
+		new = ft_lstnew_cmd_line(nb_lettre_cmd(input) + 1);
+		if (!new)
+			return (0);
+		ft_lstadd_back_cmd_line(list, new);
 		split2_pipe(&input, list);
 		n--;
 	}
 	split_word(*list);
+	printf("error_syntax = %d\n", error_syntax(*list));
+	return (1);
 }
-
-
