@@ -6,7 +6,7 @@
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 11:24:56 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/28 15:05:30 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/08/29 15:50:10 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,22 +59,27 @@ int error_double_pipe(char *input)
     return (0);
 }
 
-
-int	error_syntax(cmd_line *list)
+int	error_syntax(cmd_line **list)
 {
-	while (list->next)
-		list = list->next;
-    while (list->token->next)
-        list->token = list->token->next;
-    printf("last token = %s\n", list->token->word);
-    if (list->token->word[0] == '<' || list->token->word[0] == '>')
+    cmd_line    *begin;
+    token       *token;
+
+    begin = *list;
+	while (begin)
+    {
+    	token = begin->token;
+        while (token->next)
+        {
+            if (is_meta(token->next->word[0]) && is_meta(token->word[0]))
+                return (1);
+            token = token->next;
+        }
+        begin = begin->next;
+    }
+    if (token->word[0] == '<' || token->word[0] == '>')
         return (1);
-    if (list->token->word[0] == '|')
+    if (token->word[0] == '|')
         return (1);
-    // if (list->token->word[ft_strlen(list->token->word) - 1] == '>')
-    // {
-    //     printf("last carac = %c\n", list->token->word[ft_strlen(list->token->word) - 1]);
-    //     return (1);
-    // }
     return (0);
 }
+	

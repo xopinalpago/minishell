@@ -6,7 +6,7 @@
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/23 16:23:10 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/28 14:48:40 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/08/29 10:31:44 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,6 @@ int	split_pipe(char *input, cmd_line **list)
 		n--;
 	}
 	split_word(*list);
-	printf("error_syntax = %d\n", error_syntax(*list));
+	printf("error_syntax = %d\n", error_syntax(list));
 	return (1);
 }

@@ -6,7 +6,7 @@
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 09:41:21 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/28 14:42:25 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/08/29 10:31:01 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,8 @@ int					split_pipe(char *input, cmd_line **list);
 // error_handling.c
 int					error_begin_end_cmd(char *input);
 int					error_double_pipe(char *input);
-int					error_syntax(cmd_line *list);
+int	error_syntax(cmd_line **list);
+int	is_meta(char c);
 
 // expand.c
 char	*ft_strcpy(char *dst, char *src, int dstsize);
