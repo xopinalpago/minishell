@@ -1,36 +1,45 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   env.c                                              :+:      :+:    :+:   */
+/*   pids.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/18 12:55:30 by aducobu           #+#    #+#             */
-/*   Updated: 2023/10/05 14:52:26 by aducobu          ###   ########.fr       */
+/*   Created: 2023/09/04 15:32:34 by aducobu           #+#    #+#             */
+/*   Updated: 2023/09/19 09:05:03 by aducobu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../headers/minishell.h"
 
-int	builtin_env(t_data *data)
+t_pid	*ft_lstnew_pipex(pid_t pid)
 {
-	t_env	*begin;
+	t_pid	*elem;
 
-	begin = data->envp;
-	if (!data->envp)
+	elem = malloc(sizeof(t_pid));
+	if (!elem)
+		return (NULL);
+	elem->next = NULL;
+	elem->pid = pid;
+	return (elem);
+}
+
+int	ft_lstadd_back_pipex(t_pid **lst, t_pid *new)
+{
+	t_pid	*list;
+
+	list = *lst;
+	if (!new)
+		return (0);
+	if (list && new)
 	{
-		g_exit = 1;
-		return (EXIT_FAILURE);
+		while (list->next)
+			list = list->next;
+		list->next = new;
 	}
-	while (begin)
+	else
 	{
-		if (begin->key)
-			printf("%s=", begin->key);
-		if (begin->data)
-			printf("%s", begin->data);
-		printf("\n");
-		begin = begin->next;
+		*lst = new;
 	}
-	g_exit = 0;
-	return (EXIT_SUCCESS);
+	return (1);
 }

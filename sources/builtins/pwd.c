@@ -6,35 +6,30 @@
 /*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 12:36:37 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/22 15:07:20 by aducobu          ###   ########.fr       */
+/*   Updated: 2023/10/05 17:17:11 by aducobu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/exec.h"
-#include "../../libft/libft.h"
+#include "../../headers/minishell.h"
 
-// gerer argument
-void	builtin_pwd(char **env)
+int	builtin_pwd(void)
 {
-	int i;
-	int j;
+	char	*res;
 
-	i = 0;
-	j = 4;
-	if (!env)
-		return ;
-	while (env[i])
+	res = getcwd(NULL, 0);
+	if (res)
 	{
-		if (ft_strnstr(env[i], "PWD=", 4))
-		{
-			while (env[i][j])
-			{
-				printf("%c", env[i][j]);
-				j++;
-			}
-			printf("\n");
-			return ;
-		}
-		i++;
+		printf("%s\n", res);
+		free(res);
 	}
+	else
+	{
+		g_exit = 1;
+		ft_putstr_fd("pwd: error retrieving current directory: getcwd: ", 2);
+		ft_putstr_fd("cannot access parent directories: ", 2);
+		ft_putstr_fd("No such file or directory\n", 2);
+		return (EXIT_FAILURE);
+	}
+	g_exit = 0;
+	return (EXIT_SUCCESS);
 }

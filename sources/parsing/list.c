@@ -6,16 +6,15 @@
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/23 10:51:00 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/25 13:32:51 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/09/28 10:27:11 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/exec.h"
-#include "../../libft/libft.h"
+#include "../../headers/minishell.h"
 
-void	ft_lstadd_back_cmd_line(cmd_line **lst, cmd_line *new)
+void	ft_lstadd_back_cmd_line(t_cmd_line **lst, t_cmd_line *new)
 {
-	cmd_line	*list;
+	t_cmd_line	*list;
 
 	list = *lst;
 	if (list)
@@ -28,21 +27,28 @@ void	ft_lstadd_back_cmd_line(cmd_line **lst, cmd_line *new)
 		*lst = new;
 }
 
-cmd_line	*ft_lstnew_cmd_line(int len)
+t_cmd_line	*ft_lstnew_cmd_line(int len)
 {
-	cmd_line	*elem;
+	t_cmd_line	*elem;
 
-	elem = malloc(sizeof(cmd_line));
+	elem = malloc(sizeof(t_cmd_line));
 	if (!elem)
 		return (NULL);
 	elem->cmd = malloc(sizeof(char) * len);
 	if (!elem->cmd)
 		return (NULL);
+	ft_bzero(elem->cmd, len);
+	elem->infile = NULL;
+	elem->outfile = NULL;
+	elem->fd[0] = 0;
+	elem->fd[1] = 0;
+	elem->token = NULL;
 	elem->next = NULL;
+	elem->args = NULL;
 	return (elem);
 }
 
-cmd_line	*ft_lstlast_cmd_line(cmd_line *lst)
+t_cmd_line	*ft_lstlast_cmd_line(t_cmd_line *lst)
 {
 	if (!lst)
 		return (NULL);
@@ -51,11 +57,11 @@ cmd_line	*ft_lstlast_cmd_line(cmd_line *lst)
 	return (lst);
 }
 
-token	*ft_lstnew_token(cmd_line *list, int start, int end)
+t_token	*ft_lstnew_token(t_cmd_line *list, int start, int end)
 {
-	token	*elem;
+	t_token	*elem;
 
-	elem = malloc(sizeof(token));
+	elem = malloc(sizeof(t_token));
 	if (!elem)
 		return (NULL);
 	elem->word = (char *)malloc(sizeof(char) * (end - start + 1));
@@ -68,9 +74,9 @@ token	*ft_lstnew_token(cmd_line *list, int start, int end)
 	return (elem);
 }
 
-void	ft_lstadd_back_token(token **lst, token *new)
+void	ft_lstadd_back_token(t_token **lst, t_token *new)
 {
-	token	*list;
+	t_token	*list;
 
 	list = *lst;
 	if (list)

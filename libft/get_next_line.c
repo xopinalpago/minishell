@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
+/*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/03 16:15:10 by aducobu           #+#    #+#             */
-/*   Updated: 2023/07/03 11:00:15 by aducobu          ###   ########.fr       */
+/*   Updated: 2023/09/27 09:14:35 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ char	*create_stash(char *stash, int fd, char *buf)
 	return (stash);
 }
 
-char	*get_next_line(int fd, char *to_find)
+char	*get_next_line(int fd)
 {
 	char		*ligne;
 	static char	*stash;
@@ -114,8 +114,6 @@ char	*get_next_line(int fd, char *to_find)
 		return (free(stash), NULL);
 	inter = ft_substr(ligne, 0, ft_strlen(ligne) - 1);
 	if (!inter)
-		return (ft_printf("ERREUR\n"), NULL);
-	if (ft_strcmp(inter, to_find) == 0)
-		return (free(stash), free(inter), free(ligne), NULL);
+		return (NULL);
 	return (free(inter), ligne);
 }

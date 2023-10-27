@@ -6,31 +6,34 @@
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/23 16:23:10 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/29 10:31:44 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/09/28 16:32:45 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/exec.h"
-#include "../../libft/libft.h"
+#include "../../headers/minishell.h"
 
 int	nb_mots_cmd(char *str)
 {
-	int		mots;
 	char	q;
+	int		mots;
 
 	mots = 1;
-	while (*str)
+	if (!str)
+		return (0);
+	while (*str != '\0')
 	{
 		if (*str == 34 || *str == 39)
 		{
-			q = *str++;
+			q = *str;
+			str++;
 			while (*str && *str != q)
 				str++;
 			str++;
 		}
-		if (*str == '|')
+		if (*str && *str == '|')
 			mots++;
-		str++;
+		if (*str && *str != 34 && *str != 39)
+			str++;
 	}
 	return (mots);
 }
@@ -41,7 +44,7 @@ int	nb_lettre_cmd(char *s)
 	char	q;
 
 	i = 0;
-	while (s[i])
+	while (s && i < ft_strlen(s))
 	{
 		if (s[i] == 34 || s[i] == 39)
 		{
@@ -53,18 +56,19 @@ int	nb_lettre_cmd(char *s)
 				return (i);
 			i++;
 		}
-		if (s[i] == '|')
+		if (s[i] && s[i] == '|')
 			return (i);
-		i++;
+		else if (s[i] && s[i] != 34 && s[i] != 39)
+			i++;
 	}
 	return (i);
 }
 
-void	split2_pipe(char **input, cmd_line **cmd)
+void	split2_pipe(char **input, t_cmd_line **cmd)
 {
 	int			j;
 	char		q;
-	cmd_line	*begin;
+	t_cmd_line	*begin;
 
 	j = 0;
 	begin = ft_lstlast_cmd_line(*cmd);
@@ -80,16 +84,16 @@ void	split2_pipe(char **input, cmd_line **cmd)
 				return ;
 			begin->cmd[j++] = *(*input)++;
 		}
-		if (*(*input) != '|')
+		if (*(*input) && *(*input) != '|' && *(*input) != 34 && *(*input) != 39)
 			begin->cmd[j++] = *(*input)++;
 	}
 	begin->cmd[j] = '\0';
 }
 
-int	split_pipe(char *input, cmd_line **list)
+int	split_pipe(char *input, t_cmd_line **list)
 {
 	int			n;
-	cmd_line	*new;
+	t_cmd_line	*new;
 
 	if (input == NULL)
 		return (0);
@@ -105,7 +109,5 @@ int	split_pipe(char *input, cmd_line **list)
 		split2_pipe(&input, list);
 		n--;
 	}
-	split_word(*list);
-	printf("error_syntax = %d\n", error_syntax(list));
-	return (1);
+	return (split_word(*list));
 }

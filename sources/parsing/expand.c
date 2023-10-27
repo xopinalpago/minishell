@@ -6,12 +6,11 @@
 /*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 14:34:24 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/28 10:48:58 by aducobu          ###   ########.fr       */
+/*   Updated: 2023/10/06 12:11:43 by aducobu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/exec.h"
-#include "../../libft/libft.h"
+#include "../../headers/minishell.h"
 
 char	*ft_strcpy(char *dst, char *src, int dstsize)
 {
@@ -28,41 +27,25 @@ char	*ft_strcpy(char *dst, char *src, int dstsize)
 	return (dst);
 }
 
-char	*ft_trim(char *s, int len)
+int	count_char(char *s, t_data *data, t_token **token, int k)
 {
-	int		i;
-	char	*res;
-
-	i = 0;
-	while (*s && i < len)
-	{
-		++s;
-		i++;
-	}
-	res = ft_substr(s, 0, ft_strlen(s));
-	return (res);
-}
-
-int	count_char(char *s, char **env)
-{
-	int n;
+	int	n;
 
 	n = 0;
-	while (*s)
+	while (s && *s != '\0')
 	{
-		if (*s == 39)
-		{
+		if (*s == 39 && (*token)->type != LIMITOR)
 			n += count_between_simple(&s);
-		}
-		else if (*s == 34)
-		{
-			n += count_between_double(&s, env);
-		}
-		else if (*s == '$')
+		else if (*s == 34 && (*token)->type != LIMITOR)
+			n += count_between_double(&s, data, token);
+		if (*s == '$' && *(s + 1) && *(s + 1) != 34 && *(s + 1) != ' ' && *(s
+				+ 1) != '/' && (*token)->type != LIMITOR)
 		{
 			s++;
-            n += find_variable(s, env);
-			s = s + len_var_env(s) - 1;
+			k = find_variable_special(&s, data, token);
+			n += k;
+			if (k == 0)
+				s--;
 		}
 		else
 			n++;
@@ -71,24 +54,21 @@ int	count_char(char *s, char **env)
 	return (n);
 }
 
-char *apply_expand(char *res, char *word, char **env)
+char	*apply_expand(char *res, char *word, t_data *data, t_token **token)
 {
-	int i;
-	
+	int	i;
+
 	i = 0;
-    while (*word)
+	while (*word)
 	{
-		if (*word == 39)
-		{
+		if (*word == 39 && (*token)->type != LIMITOR)
 			i = between_simple(res, &word, i);
-		}
-		else if (*word == 34)
+		else if (*word == 34 && (*token)->type != LIMITOR)
+			i = between_double(res, &word, data, i);
+		else if (*word == '$' && *(word + 1) && *(word + 1) != ' ' && *(word
+				+ 1) != '/' && (*token)->type != LIMITOR)
 		{
-			i = between_double(res, &word, env, i);
-		}
-		else if (*word == '$')
-		{
-			i = out_of_quotes(res, &word, env, i);
+			i = out_of_quotes(res, &word, data, i);
 			word = word + len_var_env(word) - 1;
 		}
 		else
@@ -99,20 +79,50 @@ char *apply_expand(char *res, char *word, char **env)
 	return (res);
 }
 
-char	*ft_expand(char *word, char **env)
+char	*trim_isspace(char const *s1, char const *set)
 {
-	char *res;
-	char *trim;
-	int len_malloc;
+	char	*ret;
+	char	*start;
+	char	*end;
 
+	if (!s1 || !set)
+		return (0);
+	start = (char *)s1;
+	end = start + ft_strlen(s1);
+	while (*start && ((*start >= 9 && *start <= 13) || *start == 32))
+		++start;
+	while (start < end && ((*(end - 1) >= 9 && *(end - 1) <= 13) || *(end
+				- 1) == 32))
+		--end;
+	ret = ft_substr(start, 0, end - start);
+	return (ret);
+}
+
+char	*ft_expand(char *word, t_data *data, t_token **token, int hd)
+{
+	char	*res;
+	char	*trim;
+	int		len_malloc;
+
+	trim = NULL;
 	if (!word)
-		return (NULL); // ERROR
-	trim = ft_strtrim(word, " ");
-	// free(word); // commente pour le test dans le main
-	len_malloc = count_char(trim, env);
+		return (NULL);
+	if (!hd)
+		trim = trim_isspace(word, " ");
+	else
+		trim = ft_strdup(word);
+	if (!trim)
+		return (NULL);
+	if (!ft_strcmp(word, "\"\""))
+		return (free(trim), free(word), ft_strdup("\"\""));
+	if (!ft_strcmp(word, "\'\'"))
+		return (free(trim), free(word), ft_strdup("\'\'"));
+	len_malloc = count_char(trim, data, token, 0);
 	res = malloc(sizeof(char) * (len_malloc + 1));
 	if (!res)
-		return (NULL); // ERROR
-	res = apply_expand(res, trim, env);
+		return (free(word), free(trim), NULL);
+	res = apply_expand(res, trim, data, token);
+	free(trim);
+	free(word);
 	return (res);
 }

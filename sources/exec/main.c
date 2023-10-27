@@ -3,88 +3,90 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
+/*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 09:39:53 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/28 10:59:18 by aducobu          ###   ########.fr       */
+/*   Updated: 2023/10/05 18:20:54 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../headers/exec.h"
-#include "../../libft/libft.h"
+#include "../../headers/minishell.h"
 
-//#include <signal.h>
-
-void	display_tab(char *input)
+void	initialize(t_data *data)
 {
-	int		i;
-	char	**tab;
-
-	i = 0;
-	tab = split_meta(input, ' ');
-	while (tab[i])
-	{
-		printf(".%s.\n", tab[i]);
-		i++;
-	}
-	free_tab(tab);
+	data->etat.simple = 0;
+	data->etat.doubl = 0;
+	data->cmd = NULL;
+	data->tab_env = NULL;
 }
 
-void	display_list(cmd_line *list)
+char	*prompt(void)
 {
-	while (list)
+	char	*input;
+	char	*line;
+
+	input = NULL;
+	set_signals(1);
+	if (isatty(STDIN_FILENO))
+		input = readline("minishell$ ");
+	else
 	{
-		printf("cmd_line = .%s.\n", list->cmd);
-		list = list->next;
+		line = get_next_line(STDIN_FILENO);
+		input = ft_strtrim(line, "\n");
+		free(line);
 	}
+	return (input);
 }
 
-void	display_token(cmd_line *list)
+void	init_main(t_data *data, char **env)
 {
-	token *token;
-	
-	while (list)
-    {
-		printf("\ncmd line = [%s]\n", list->cmd);
-        token = list->token;
-        while (token)
-        {
-			printf("word : [%s] - type : [%u]\n", token->word, token->type);
-            token = token->next;
-        }
-        list = list->next;
-    }
+	g_exit = 0;
+	data->envp = NULL;
+	data->envex = NULL;
+	parse_env(env, data);
+	handle_shlevel(data);
+}
+
+void	main_utils(t_data *data)
+{
+	if (data->input[0])
+	{
+		add_history(data->input);
+		if (parsing(data))
+		{
+			ft_pipex(data);
+		}
+		else
+			g_exit = 2;
+	}
+	free(data->input);
 }
 
 int	main(int argc, char **argv, char **env)
 {
-	char		*input;
-	cmd_line	*list;
+	t_data	data;
 
 	(void)argv;
-	list = NULL;
 	if (argc != 1)
 		return (printf("No argument are needed !\n"), 1);
-	input = readline("minishell> ");
-	while (input != NULL)
+	init_main(&data, env);
+	while (1)
 	{
-		if (input[0] != '\0')
+		initialize(&data);
+		data.input = prompt();
+		if (data.input)
+			main_utils(&data);
+		else
 		{
-			add_history(input);
-			// -> traiter input : parsing puis execution
-			if (!parsing(input, env, &list))
-				printf("ERROR -> parsing\n");
-				// return (1); // afficher l'erreur puis passer au nouveau prompt
-			// else
-			// 	display_list(list);
-			display_token(list);
+			if (isatty(0) == 1)
+				printf("exit\n");
+			return (free_all(&data), g_exit);
 		}
-		free(input);
-		free_list(&list);
-		input = readline("minishell> ");
+		free_list(data.cmd);
+		if (data.tab_env)
+			free_tab(data.tab_env);
 	}
-	free(input);
-	// clear_history();
-	rl_clear_history();
+	clear_history();
+	free_all(&data);
 	return (0);
 }

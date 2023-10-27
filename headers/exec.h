@@ -3,118 +3,85 @@
 /*                                                        :::      ::::::::   */
 /*   exec.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 09:41:21 by aducobu           #+#    #+#             */
-/*   Updated: 2023/08/29 10:31:01 by rmeriau          ###   ########.fr       */
+/*   Updated: 2023/10/06 10:38:15 by aducobu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EXEC_H
 # define EXEC_H
 
-# include <readline/history.h>
-# include <readline/readline.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <unistd.h>
+void	free_tab(char **tab);
+void	free_cmd_in(t_file *in);
+void	free_list(t_cmd_line *begin);
+void	free_all(t_data *data);
+void	wait_fct(t_pid **pids);
+void	free_elem_env(t_env *list);
+void	free_env(t_env *env);
+void	fr_no_buil(t_cmd_line *cmd, t_pipex *pipex, t_data *data, t_pid **pids);
+void	free_pid(t_pid **pids);
+void	free_token(t_token *token);
+void	initialize(t_data *data);
+char	*prompt(void);
+int		nb_arg(t_cmd_line *list);
+void	fill_arg(t_cmd_line *list);
+int		tab_cmd(t_cmd_line **list);
+char	**new_tab(char **old_tab, int old_len);
+void	parse_error(t_data *data);
+void	initialise_pipex(t_pipex *pipex);
+int		parsing_pipex(t_pipex *pipex, t_data *data);
+int		ft_lstsize_cmd(t_cmd_line *lst);
+int		ft_pipex(t_data *data);
+char	**get_paths(t_env **envp);
+void	ft_lstadd_file(t_file **lst, t_file *new);
+t_file	*ft_lstnew_file(int fd, int err, char *file);
+t_file	*ft_lstlast_file(t_file *lst);
+void	add_infiles(t_cmd_line *cmd);
+int		open_files(t_data *data);
+void	add_outfiles(t_cmd_line *cmd);
+int		loop_process(t_data *data, t_pid **pids, t_pipex *pipex);
+void	ft_parent(t_pid **pids, pid_t pid, t_cmd_line *cmd, t_file *last_in);
+int		ft_process(t_pipex *pipex, t_pid **pids, t_cmd_line *cmd, t_data *data);
+void	no_built(t_cmd_line *cmd, t_pipex *pipex, t_data *data, t_pid **pids);
+int		ft_child(t_cmd_line *cmd, t_pipex *pipex, t_data *data, t_pid **pids);
+char	**copy_to_tab(char **tab, t_env *tmp);
+char	**list_to_tab(t_env **envp);
+int		handle_hd(t_data *data, t_pid **pids, t_pipex *pipex, t_cmd_line *tmp);
+void	handle_pt(t_cmd_line *cmd, t_pipex *pipex, t_data *data, t_pid **pids);
+void	do_dup(t_cmd_line *cmd, t_file *last_in, t_file *last_out);
+char	*ft_trim_paths(char *s);
+char	*find_path(char **paths, char *cmd);
+t_pid	*ft_lstnew_pipex(pid_t pid);
+int		ft_lstadd_back_pipex(t_pid **lst, t_pid *new);
+int		is_here_doc(t_cmd_line *cmd);
+int		read_standart(t_pipex *pipex, t_data *data, t_token *tok);
+int		standart_input(t_cmd_line *cmd, t_pipex *pipex, t_data *data);
+int		proc_hd(t_pipex *pipex, t_cmd_line *cmd, t_data *data, t_pid **pids);
+int		ft_hd(t_cmd_line *cmd, t_pipex *pipex, t_data *data, t_pid **pids);
+void	get_type_hd(t_token *lst);
+t_token	*ft_lstnew_token_hd(char *lign, int start, int end);
+int		add_word_hd(t_token **token_hd, char *lign);
+int		surr_by_quotes(char *s);
+char	*ft_trim_hd(char const *s1);
+int		quotes_hd(t_token *tok, t_token **token_hd);
+int		make_expand(t_token *tok, t_data *data, t_token	*curr,
+			t_token **token_hd);
+int		expand_here_doc(t_token *tok, t_data *data, char *lign,
+			t_pipex *pipex);
+void	error_file(t_file *in);
+void	error_cmd(t_cmd_line *cmd);
+void	error_token_gen(int tmp);
+void	error_token(char c);
+void	error_file_exec(char *cmd, int error);
+int		get_shlvl(t_data *data);
+int		is_shlvl(t_data *data);
+char	*get_shvalue(t_data *data);
+void	handle_shlevel(t_data *data);
 
-// -------------------- parsing -------------------- //
-
-typedef enum type
-{
-	NONE,         //defaut set
-	ARG,          //word
-	FILE_IN,      //word == '<'
-	HERE_DOC,     // word == '<<'
-	FILE_OUT,     //word == '>'
-	FILE_OUT_SUR, //word == '>>'
-	OPEN_FILE,    // word following '<'
-	LIMITOR,      // word following '<<'
-	EXIT_FILE,    // word followinf '>'
-	EXIT_FILE_RET // word following '>>'
-}					t_type;
-
-typedef struct s_quotes
-{
-	int				simple;
-	int				doubl;
-}					t_quotes;
-
-typedef struct token
-{
-	char			*word;
-	t_type			type;
-	struct token	*next;
-	struct token	*previous;
-}					token;
-
-typedef struct cmd_line
-{
-	char			*cmd;
-	struct token	*token;
-	struct cmd_line	*next;
-}					cmd_line;
-
-// quotes.c
-int					closed_quotes(char *input, t_quotes *etat);
-// split_meta.c
-char				**split_meta(char *input, char c);
-// parsing.c
-int					parsing(char *input, char **env, cmd_line **list);
-// list.c
-void				ft_lstadd_back_cmd_line(cmd_line **lst, cmd_line *new);
-cmd_line			*ft_lstnew_cmd_line(int len);
-cmd_line			*ft_lstlast_cmd_line(cmd_line *lst);
-// split_pipe.c
-int					nb_mots_cmd(char *str);
-int					nb_lettre_cmd(char *s);
-void				split2_pipe(char **input, cmd_line **cmd);
-int					split_pipe(char *input, cmd_line **list);
-// error_handling.c
-int					error_begin_end_cmd(char *input);
-int					error_double_pipe(char *input);
-int	error_syntax(cmd_line **list);
-int	is_meta(char c);
-
-// expand.c
-char	*ft_strcpy(char *dst, char *src, int dstsize);
-char	*ft_trim(char *s, int len);
-int	count_char(char *s, char **env);
-char				*ft_expand(char *word, char **env);
-// expand_count.c
-char *existing_var(char *var, char **env);
-int len_var_env(char *s);
-int find_variable(char *s, char **env);
-int count_between_simple(char **s);
-int count_between_double(char **s, char **env);
-// expand_apply.c
-int between_simple(char *res, char **word, int i);
-int between_double(char *res, char **word, char **env, int i);
-int out_of_quotes(char *res, char **word, char **env, int i);
-
-// split_word.c
-void				ft_strcpy_pos(char *dst, char *src, int start, int end);
-t_type				get_type_meta(char *word);
-void				get_type(token *lst);
-token				*ft_lstnew_token(cmd_line *list, int start, int end);
-void				ft_lstadd_back_token(token **lst, token *new);
-int					add_word(cmd_line *list);
-int					get_end_word(char *cmd, int i);
-void				split_word(cmd_line *list);
-
-// -------------------- exec -------------------- //
-
-// pwd.c
-void				builtin_pwd(char **env);
-// env.c
-void				builtin_env(char **env);
-// cd.c
-void				builtin_cd(char *chemin);
-// echo.c
-void				builtin_echo(char **cmd);
-// frees.c
-void				free_tab(char **tab);
-void				free_list(cmd_line **begin);
-
+// void	get_type_hd(t_token *lst);
+// t_token	*ft_lstnew_token_hd(char *lign, int start, int end);
+// void	free_token(t_token *token);
+// int		add_word_hd(t_token **token_hd, char *lign);
 #endif

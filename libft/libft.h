@@ -6,7 +6,7 @@
 /*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/02 11:46:29 by aducobu           #+#    #+#             */
-/*   Updated: 2023/06/30 10:34:56 by aducobu          ###   ########.fr       */
+/*   Updated: 2023/10/04 16:06:30 by aducobu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ int					ft_memcmp(const void *s1, const void *s2, int n);
 char				*ft_strnstr(const char *haystack, const char *needle,
 						int len);
 int					ft_atoi(const char *str);
-long int			ft_long_atoi(const char *str);
+long long int		ft_long_atoi(const char *str, int *good);
 void				*ft_calloc(int count, int size);
 char				*ft_strdup(const char *s1);
 
@@ -53,6 +53,7 @@ char				*ft_substr(char const *s, unsigned int start, int len);
 char				*ft_strjoin(char const *s1, char const *s2);
 char				*ft_strtrim(char const *s1, char const *set);
 char				**ft_split(char const *s, char c);
+char				**error(char **res, int i);
 char				*ft_itoa(int n);
 char				*ft_strmapi(char const *s, char (*f)(unsigned int, char));
 void				ft_striteri(char *s, void (*f)(unsigned int, char *));
@@ -83,7 +84,7 @@ char				*ft_strstr(char *str, char *to_find);
 #  define BUFFER_SIZE 42
 # endif
 
-char				*get_next_line(int fd, char *to_find);
+char				*get_next_line(int fd);
 char				*clean_stash(char *stash);
 void				modif_stash(char *stash);
 int					is_new_line(char *line);
@@ -94,6 +95,8 @@ typedef struct s_list
 	void			*content;
 	struct s_list	*next;
 }					t_list;
+
+char				**ft_split_env(const char *str);
 
 // t_list				*ft_lstnew(void *content);
 // void				ft_lstadd_front(t_list **lst, t_list *new);

@@ -1,26 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strdup.c                                        :+:      :+:    :+:   */
+/*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rmeriau <rmeriau@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/02 11:36:36 by aducobu           #+#    #+#             */
-/*   Updated: 2023/10/02 15:33:59 by rmeriau          ###   ########.fr       */
+/*   Created: 2023/08/31 14:56:51 by aducobu           #+#    #+#             */
+/*   Updated: 2023/09/28 09:53:36 by rmeriau          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#ifndef MINISHELL_H
+# define MINISHELL_H
 
-char	*ft_strdup(const char *s1)
-{
-	char	*res;
-	int		len;
+# include <readline/history.h>
+# include <readline/readline.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <unistd.h>
+# include <sys/wait.h>
+# include <signal.h>
+# include <sys/ioctl.h>
+# include <errno.h>
+# include "../libft/libft.h"
+# include "structures.h"
+# include "parsing.h"
+# include "exec.h"
+# include "builtins.h"
+# include "signal.h"
 
-	len = ft_strlen(s1) + 1;
-	res = malloc(sizeof(char) * len);
-	if (!res)
-		return (0);
-	res = ft_memcpy(res, s1, len);
-	return (res);
-}
+#endif

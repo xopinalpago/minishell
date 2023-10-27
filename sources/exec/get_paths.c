@@ -1,36 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   env.c                                              :+:      :+:    :+:   */
+/*   get_paths.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/18 12:55:30 by aducobu           #+#    #+#             */
-/*   Updated: 2023/10/05 14:52:26 by aducobu          ###   ########.fr       */
+/*   Created: 2023/09/01 09:32:42 by aducobu           #+#    #+#             */
+/*   Updated: 2023/10/06 10:37:54 by aducobu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../headers/minishell.h"
 
-int	builtin_env(t_data *data)
+char	**get_paths(t_env **envp)
 {
+	char	**paths;
 	t_env	*begin;
 
-	begin = data->envp;
-	if (!data->envp)
-	{
-		g_exit = 1;
-		return (EXIT_FAILURE);
-	}
+	begin = *envp;
+	if (!begin)
+		return (NULL);
 	while (begin)
 	{
-		if (begin->key)
-			printf("%s=", begin->key);
-		if (begin->data)
-			printf("%s", begin->data);
-		printf("\n");
+		if (ft_strnstr(begin->key, "PATH", 4))
+		{
+			if (!begin->data)
+				return (NULL);
+			paths = ft_split(begin->data, ':');
+			if (paths == NULL)
+				return (0);
+			return (paths);
+		}
 		begin = begin->next;
 	}
-	g_exit = 0;
-	return (EXIT_SUCCESS);
+	return (NULL);
 }

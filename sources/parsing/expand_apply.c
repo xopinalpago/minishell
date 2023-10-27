@@ -1,61 +1,110 @@
-#include "../../headers/exec.h"
-#include "../../libft/libft.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expand_apply.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aducobu <aducobu@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/08/31 15:01:12 by aducobu           #+#    #+#             */
+/*   Updated: 2023/10/05 14:52:26 by aducobu          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-int between_simple(char *res, char **word, int i)
+#include "../../headers/minishell.h"
+
+int	between_simple(char *res, char **word, int i)
 {
 	(*word)++;
 	while (*(*word) && *(*word) != 39)
 	{
 		res[i] = *(*word);
 		(*word)++;
-        i++;
+		i++;
 	}
-    return (i);
+	return (i);
 }
 
-int out_of_quotes(char *res, char **word, char **env, int i)
+int	out_of_quotes(char *res, char **word, t_data *data, int i)
 {
-	int j;
-	char *cpy;
-	char *var;
+	int		j;
+	char	*cpy;
+	char	*var;
+
+	j = 0;
+	(*word)++;
+	var = NULL;
+	cpy = malloc(sizeof(char) * (len_var_env(*word) + 1));
+	if (!cpy)
+		return (0);
+	cpy = ft_strcpy(cpy, *word, len_var_env(*word) + 1);
+	if (**word == '?')
+		var = ft_itoa(g_exit);
+	else
+		var = existing_var(cpy, data, 1);
+	if (ft_strlen_expand(var) != ft_strlen(var))
+		while (var && var[j] != ' ')
+			res[i++] = var[j++];
+	else
+		while (var && var[j])
+			res[i++] = var[j++];
+	if (cpy != NULL)
+		free(cpy);
+	free(var);
+	return (i);
+}
+
+int	apply_out_quotes(char *res, char **word, t_data *data, int i)
+{
+	int		j;
+	char	*cpy;
+	char	*var;
 
 	j = 0;
 	(*word)++;
 	cpy = malloc(sizeof(char) * (len_var_env(*word) + 1));
 	if (!cpy)
-		return (printf("echec malloc\n"), 0);
+		return (0);
 	cpy = ft_strcpy(cpy, *word, len_var_env(*word) + 1);
-	var = existing_var(cpy, env);
+	if (**word == '?')
+		var = ft_itoa(g_exit);
+	else
+		var = existing_var(cpy, data, 1);
 	while (var && var[j])
 		res[i++] = var[j++];
-	return (i);	
+	free(var);
+	free(cpy);
+	return (i);
 }
 
-int between_double(char *res, char **word, char **env, int i)
+int	between_double(char *res, char **word, t_data *data, int i)
 {
-    int j;
-    char *cpy;
-    char *var;
+	(*word)++;
+	while (*(*word) && *(*word) != 34)
+	{
+		if (**word == '$' && *(*word + 1) && *(*word + 1) != 34
+			&& *(*word + 1) != ' ' && *(*word + 1) != '/')
+		{
+			i = apply_out_quotes(res, word, data, i);
+			(*word) = (*word) + len_var_env(*word) - 1;
+		}
+		else
+			res[i++] = *(*word);
+		(*word)++;
+	}
+	return (i);
+}
 
-    (*word)++;
-    while (*(*word) && *(*word) != 34)
-    {
-        if (*(*word) == '$')
-        {
-            (*word)++;
-            cpy = malloc(sizeof(char) * (len_var_env(*word) + 1));
-            if (!cpy)
-                return (printf("echec malloc\n"), 0); // ERREUR
-            cpy = ft_strcpy(cpy, *word, len_var_env(*word) + 1);
-            var = existing_var(cpy, env);
-            j = 0;
-            while (var && var[j])
-                res[i++] = var[j++];
-            (*word) = (*word) + len_var_env(*word) - 1;
-        }
-        else
-            res[i++] = *(*word);
-        (*word)++;
-    }
-    return (i);
+char	*ft_trim(char *s, int len)
+{
+	int		i;
+	char	*res;
+
+	i = 0;
+	while (*s && i < len)
+	{
+		++s;
+		i++;
+	}
+	res = ft_substr(s, 0, ft_strlen(s));
+	return (res);
 }
